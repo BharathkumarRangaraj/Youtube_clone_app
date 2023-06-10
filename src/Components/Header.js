@@ -1,16 +1,37 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { toggleMenu } from '../utils/appslice';
+import { YoutubesearchApi } from '../utils/const';
 
 const Header = () => {
-  const dispatch=useDispatch();
+  const [searchtext,setsearchtext]=useState('');
+  const [suggest,setsuggest]=useState([]);
+  const [showsuggetion,setshowsuggetion]=useState(false);
 
-  const Togglemenuhandler=()=>{
+  const dispatch=useDispatch();
+  
+  useEffect(()=>{
+   const timer= setTimeout(() => {
+      getsearchapi(); }, 200);  
+
+      return()=>{
+        clearTimeout(timer);
+      }
+  },[searchtext]);
+
+  const getsearchapi=async ()=>{
+    const data=await fetch(YoutubesearchApi+searchtext);
+    const json=await data.json();
+    setsuggest(json[1]);
+    
+   
+}
+ const Togglemenuhandler=()=>{
     dispatch(toggleMenu())
 
   }
   return (
-    <div className='grid grid-flow-col shadow-lg py-4'>
+    <div className='grid grid-flow-col shadow-lg py-4 '>
         <div className='flex col-span-1 m-2'>
             <img 
             onClick={()=>Togglemenuhandler()}
@@ -21,8 +42,27 @@ const Header = () => {
         </div>
        
         <div className='col-span-10 '>
-            <input className='border border-gray-300 w-1/2 rounded-l-full bg-gray-200 h-10'  type='text'/>
+          <div>
+            <input 
+            value={searchtext}
+            onChange={(e)=>setsearchtext(e.target.value)}
+            onFocus={()=>setshowsuggetion(true)}
+            onBlur={()=>setshowsuggetion(false)}
+
+            
+            className='border border-gray-300 w-1/2 rounded-l-full bg-gray-200 h-10'  type='text'/>
             <button className='border border-gray-300  rounded-r-full bg-gray-100 w-16 h-10'>Search</button>
+            </div>
+            <div className='bg-white rounded-lg py-2 px-2 shadow-lg border border-gray-200'>
+              {showsuggetion && <ul className='fixed w-[32rem]'>
+                {
+                  suggest.map((s)=><li key={s} className=' bg-white py-2 px-2 shadow-sm  hover:bg-gray-200'>{"🔎"+ s}</li>)
+                }
+                
+                
+              
+              </ul>}
+            </div>
         </div>
 
         <div className='col-span-1'>
